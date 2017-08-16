@@ -1,4 +1,4 @@
-ftfile /var/lib/ntp/drift
+driftfile /var/lib/ntp/drift
 <% [1,2].each do |n| -%>
 server <%=n-%><%=@ntp_server_suffix%>
 <% end -%>

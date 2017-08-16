@@ -1,8 +1,9 @@
 FROM centos:7
 
+ENTRYPOINT ["/bin/bash"]
 RUN yum update -y
 
-COMMAND cat > /tmp/helloworld.rb <<EOL
+CMD cat > /tmp/helloworld.rb <<EOL
          #!/usr/bin/ruby
 
          puts "HTTP/1.0 200 OK"
@@ -18,25 +19,25 @@ RUN yum install httpd -y && /etc/init.d/httpd start \
     
 #Test output
 
-COMMAND curl -v http://localhost/helloworld
+CMD curl -v http://localhost/helloworld
 
 #Install Puppet
 RUN  yum -y install https://yum.puppetlabs.com/puppetlabs-release-el-7.noarch.rpm
 
-COMMAND  sed -i -e "s/enabled=1/enabled=0/g" /etc/yum.repos.d/puppetlabs.repo
+CMD  sed -i -e "s/enabled=1/enabled=0/g" /etc/yum.repos.d/puppetlabs.repo
 
 RUN  yum --enablerepo=puppetlabs-products,puppetlabs-deps -y install puppet
 
 # Create roles and profiles for John user
 
-COMMAND useradd john && passwd john
+CMD useradd john && passwd john
 
-COMMAND puppet module generate --modulepath `pwd` john-role \
+CMD puppet module generate --modulepath `pwd` john-role \
         && puppet module generate --modulepath `pwd` john-profile
 
 #overriding default and creating a profile
 
-COMMAND cat > /root/john-profile/manifests/apache.pp <<EOL
+CMD cat > /root/john-profile/manifests/apache.pp <<EOL
         class profile::apache {
         class {'::apache': }
        }
@@ -44,7 +45,7 @@ COMMAND cat > /root/john-profile/manifests/apache.pp <<EOL
 
 # Create a role for the webserver called role::webserver:
  
-COMMAND cat > /root/john-role/manifests/webserver.pp <<EOL
+CMD cat > /root/john-role/manifests/webserver.pp <<EOL
         class role::webserver {
         include profile::apache
         include profile::base
@@ -52,12 +53,12 @@ COMMAND cat > /root/john-role/manifests/webserver.pp <<EOL
        EOL
          
   
-COMMAND facter | wc
-COMMAND facter timezone
+CMD facter | wc
+CMD facter timezone
 
 #Install rspec 
 
-COMMAND gem install rspec-puppet \
+CMD gem install rspec-puppet \
         mkdir -p /etc/puppet/modules/ntp/manifests \
         mkdir -p /etc/puppet/modules/ntp/templates \
         mkdir -p /etc/puppet/modules/ntp/spec/ \
@@ -72,8 +73,8 @@ COMMAND gem install rspec-puppet \
        }     	       
        EOL
 
-COMMAND cat > /etc/puppet/modules/ntp/templates/ntp.conf.erb <<EOL
-        ftfile /var/lib/ntp/drift
+CMD cat > /etc/puppet/modules/ntp/templates/ntp.conf.erb <<EOL
+        driftfile /var/lib/ntp/drift
         <% [1,2].each do |n| -%>
         server <%=n-%><%=@ntp_server_suffix%>
         <% end -%>
@@ -83,7 +84,7 @@ COMMAND cat > /etc/puppet/modules/ntp/templates/ntp.conf.erb <<EOL
         restrict 127.0.0.1
         EOL
 
-COMMAND cat > /etc/puppet/modules/ntp/spec/spec_helper.rb <<EOL
+CMD cat > /etc/puppet/modules/ntp/spec/spec_helper.rb <<EOL
         require 'rspec-puppet'
         fixture_path = File.expand_path(File.join(__FILE__, '..', 'fixtures'))
         RSpec.configure do |c|
@@ -93,7 +94,7 @@ COMMAND cat > /etc/puppet/modules/ntp/spec/spec_helper.rb <<EOL
         EOL
 # Ruby scripting 
 
-COMMAND cat > /tmp/test.txt <<EOL
+CMD cat > /tmp/test.txt <<EOL
         Hello World
         How are you
         May I know your name
@@ -102,7 +103,7 @@ COMMAND cat > /tmp/test.txt <<EOL
         Good bye
         EOL
 
-COMMAND cat > /root/test.rb <<EOL
+CMD cat > /root/test.rb <<EOL
         line_num=0
         text=File.open('/tmp/test.txt').read
         text.gsub!(/\r\n?/, "\n")
@@ -114,7 +115,13 @@ COMMAND cat > /root/test.rb <<EOL
 
 # To extract fourth word from a file
 
-COMMAND ruby -ne '(print $_ and exit) if $.==3' /tmp/test.txt | awk '{print $4}'         
+CMD cat > /root/line.rb <<EOL
+    #!/usr/bin/ruby
+
+    str = IO.readlines("/tmp/test.txt")
+    puts str[2].split[3]
+    EOL && chmod a+x /root/line.rb
+         
 
 
 

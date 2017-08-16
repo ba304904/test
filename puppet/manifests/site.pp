@@ -1,5 +1,2 @@
-package { 'ntp':
-    provider => yum,
-    ensure   => installed,
-    enable   => true,
-}
+node 'puppet.example.com' {
+node default {
