@@ -1,0 +1,6 @@
+---
+permit_root_login : 'no'
+ssh_users         : - root
+                    - jeff
+                    - gary
+                    - hunter
