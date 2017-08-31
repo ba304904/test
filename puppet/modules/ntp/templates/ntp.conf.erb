@@ -1,8 +1,0 @@
-driftfile /var/lib/ntp/drift
-<% [1,2].each do |n| -%>
-server <%=n-%><%=@ntp_server_suffix%>
-<% end -%>
-
-restrict -4 default kod notrap nomodify nopeer noquery
-restrict -6 default kod notrap nomodify nopeer noquery
-restrict 127.0.0.1
