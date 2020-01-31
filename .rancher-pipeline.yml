@@ -1,21 +1,59 @@
+# example
 stages:
-- name: Build
-  steps:
-  - runScriptConfig:
-      image: golang:1.11
-      shellScript: |-
-        mkdir -p /go/src/github.com/rancher
-        ln -s `pwd` /go/src/github.com/rancher/pipeline-example-go
-        cd /go/src/github.com/rancher/pipeline-example-go
-        go build -o bin/hello-server
-        go test -cover
-- name: Publish
-  steps:
-  - publishImageConfig:
-      dockerfilePath: ./Dockerfile
-      buildContext: .
-      tag: example-helloserver:${CICD_EXECUTION_SEQUENCE}
-- name: Deploy
-  steps:
-  - applyYamlConfig:
-      path: ./deployment.yaml
+  - name: Build something
+    # Conditions for stages
+    when:
+      branch: master
+      event: [ push, pull_request ]
+    # Multiple steps run concurrently
+    steps:
+    - runScriptConfig:
+        image: busybox
+        shellScript: echo ${FIRST_KEY} && echo ${ALIAS_ENV}
+      # Set environment variables in container for the step
+      env:
+        FIRST_KEY: VALUE
+        SECOND_KEY: VALUE2
+      # Set environment variables from project secrets
+      envFrom:
+      - sourceName: my-secret
+        sourceKey: secret-key
+        targetKey: ALIAS_ENV
+    - runScriptConfig:
+        image: busybox
+        shellScript: date -R
+      # Conditions for steps
+      when:
+        branch: [ master, dev ]
+        event: push
+  - name: Publish my image
+    steps:
+    - publishImageConfig:
+        dockerfilePath: ./Dockerfile
+        buildContext: .
+        tag: rancher/rancher:v2.0.0
+        # Optionally push to remote registry
+        pushRemote: true
+        registry: reg.example.com
+  - name: Deploy some workloads
+    steps:
+    - applyYamlConfig:
+        path: ./deployment.yaml
+# branch conditions for the pipeline
+branch:
+  include: [ master, feature/*]
+  exclude: [ dev ]
+# timeout in minutes
+timeout: 30
+notification:
+  recipients:
+  - # Recipient
+    recipient: "#mychannel"
+    # ID of Notifier
+    notifier: "c-wdcsr:n-c9pg7"
+  - recipient: "test@example.com"
+    notifier: "c-wdcsr:n-lkrhd"
+  # Select which statuses you want the notification to be sent  
+  condition: ["Failed", "Success", "Changed"]
+  # Ability to override the default message (Optional)
+  message: "my-message"
