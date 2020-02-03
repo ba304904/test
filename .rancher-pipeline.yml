@@ -1,0 +1,26 @@
+stages:
+- name: Build
+  steps:
+  - publishImageConfig:
+      dockerfilePath: ./Dockerfile
+      buildContext: .
+      tag: nikhil121/node-demo:${CICD_EXECUTION_SEQUENCE}
+      pushRemote: true
+      registry: index.docker.io
+    when:
+      branch:
+        include:
+        - development
+  when:
+    branch:
+      include:
+      - development
+- name: Deployment
+  steps:
+  - applyYamlConfig:
+      path: ./deployment.yaml
+timeout: 60
+branch:
+  include:
+  - development
+notification: {}
