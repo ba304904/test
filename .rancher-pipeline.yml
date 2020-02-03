@@ -10,11 +10,11 @@ stages:
     when:
       branch:
         include:
-        - development
+        - master
   when:
     branch:
       include:
-      - development
+      - master
 - name: Deployment
   steps:
   - applyYamlConfig:
@@ -22,5 +22,5 @@ stages:
 timeout: 60
 branch:
   include:
-  - development
+  - master
 notification: {}
