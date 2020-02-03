@@ -1,20 +1,20 @@
 stages:
-- name: Build
-  steps:
-  - publishImageConfig:
-      dockerfilePath: ./Dockerfile
-      buildContext: .
-      tag: nikhil121/node-demo:${CICD_EXECUTION_SEQUENCE}
-      pushRemote: true
-      registry: index.docker.io
-    when:
-      branch:
-        include:
-        - master
-  when:
-    branch:
-      include:
-      - master
+#- name: Build
+#  steps:
+#  - publishImageConfig:
+#      dockerfilePath: ./Dockerfile
+#      buildContext: .
+#      tag: nikhil121/node-demo:${CICD_EXECUTION_SEQUENCE}
+#      pushRemote: true
+#      registry: index.docker.io
+#    when:
+#      branch:
+#        include:
+#        - master
+#  when:
+#    branch:
+#      include:
+#      - master
 - name: Deployment
   steps:
   - applyYamlConfig:
